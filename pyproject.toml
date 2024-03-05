@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "task"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+beanie = "^1.25.0"
+discord-py = {extras = ["voice"], version = "^2.3.2"}
+yt-dlp = {url = "https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz"}
+pydantic = "^2.6.3"
+pydantic-settings = "^2.2.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
