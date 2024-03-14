@@ -8,7 +8,7 @@ import beanie
 # local
 from .conf import bot, botname
 from core.database.mongodb import client
-from core.models import document_models
+from core.models import document_models, Queues
 
 
 async def connect_db() -> None:
@@ -23,6 +23,8 @@ async def connect_db() -> None:
 @bot.event
 async def on_ready():
     await connect_db()
+    # TODO: change delete to autoplay
+    await Queues.find(Queues.bot_id == bot.user.id,).delete()
     await bot.change_presence(
         status=discord.Status.idle,
         activity=discord.Activity(type=discord.ActivityType.playing, name="?help"),
