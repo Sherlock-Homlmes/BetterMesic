@@ -1,11 +1,13 @@
 # default
 import asyncio
 import functools
+from typing import List
 
 # libraries
 import discord
 from discord.ext import commands
 import yt_dlp as youtube_dl
+from pydantic import BaseModel
 
 # local
 from core.conf import bot
@@ -14,6 +16,20 @@ from core.error_handler import YTDLError
 # bug report
 youtube_dl.utils.bug_reports_message = lambda: ""
 
+class sourceData(BaseModel):
+    uploader: str
+    uploader_url: str
+    upload_date: str
+    title: str
+    thumbnail: str
+    description: str
+    duration: int
+    tags: List[str] = []
+    webpage_url: str
+    view_count: int = 0
+    like_count: int = 0
+    dislike_count: int = 0
+    url: str
 
 class YTDLSource(discord.PCMVolumeTransformer):
     YTDL_OPTIONS = {

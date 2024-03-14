@@ -9,7 +9,7 @@ from .conf import botname
 # general funcs
 async def reply_user(ctx: commands.Context, description: str) -> None:
     embed = discord.Embed(
-        description="✅ Successfully Joined The VC", colour=discord.Colour.red()
+        description=description, colour=discord.Colour.red()
     )
     embed.timestamp = datetime.datetime.utcnow()
     embed.set_footer(text=f"{botname}")

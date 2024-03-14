@@ -1,27 +1,28 @@
 # libraries
+import asyncio
 from discord.ext import commands
 
 # local
 from core.conf import bot
 from core.general_func import reply_user
 from core.error_handler import YTDLError
-from services.youtube_mesic import YTDLSource
+from services.youtube_mesic import YTDLSource, sourceData
 from core.models import Queues
 
 
-async def update_or_insert_queue(ctx: commands.Context, source: str):
-    print(
-        bot.user.id,
-        ctx.guild.id,
-        ctx.message.author.voice.channel.id,
-        [
-            source,
-        ],
-    )
+async def get_current_queue(ctx: commands.Context) -> Queues | None:
     queue = await Queues.find_one(
         Queues.bot_id == bot.user.id,
         Queues.guild_id == ctx.guild.id,
     )
+    if queue is None:
+        return
+    return queue
+
+
+async def update_or_insert_queue(ctx: commands.Context, source_info: dict):
+    source = sourceData(**source_info)
+    queue = await get_current_queue(ctx)
     if queue is None:
         queue = await Queues(
             bot_id=bot.user.id,
@@ -38,27 +39,60 @@ async def update_or_insert_queue(ctx: commands.Context, source: str):
     return queue
 
 
+async def get_source_from_source_info(ctx: commands.Context, source_info):
+    try:
+        return await YTDLSource.create_source(ctx, source_info)
+    except YTDLError as e:
+        await ctx.send(
+            "An error occurred while processing this request: {}".format(str(e))
+        )
+
+
+async def play_song_from_source(ctx: commands.Context, source):
+    if not ctx.guild.voice_client:
+        vc = ctx.message.author.voice.channel
+        await vc.connect()
+    await ctx.guild.change_voice_state(
+        channel=ctx.author.voice.channel, self_deaf=True
+    )
+    ctx.voice_client.play(source)
+    await reply_user(ctx, f"✅ Chơi bài nhạc này nào {str(source)}")
+
+
+async def play_song_from_queue(ctx: commands.Context):
+    queue = await get_current_queue(ctx)
+    if len(queue.queue) == 1:
+        await queue.delete()
+        await reply_user(ctx, f"✅ Tôi vừa chơi hết bài rồi đó")
+        return None
+    else:
+        queue.queue.pop(0)
+        await queue.save()
+        source = await get_source_from_source_info(ctx, queue.queue[0])
+        await play_song_from_source(ctx, source)
+        return queue
+
+
 @bot.command(name="play")
 async def play(ctx: commands.Context, *, search: str = None):
     if search is None:
-        await reply_user(ctx, "❎ Error! Please specify a song to play")
+        await reply_user(ctx, "❎ Lỗi! Hãy chọn 1 bài nhạc cụ thể để tôi chơi nhé hêhê")
     else:
         async with ctx.typing():
-            source_info = await YTDLSource.validate_source(search, loop=bot.loop)
+            source_info = await YTDLSource.validate_source(
+                search,
+                loop=bot.loop
+            )
+            source = await get_source_from_source_info(ctx, source_info)
             # TODO: if queue: reply add song to queue
             queue = await update_or_insert_queue(ctx, source_info)
-            try:
-                source = await YTDLSource.create_source(ctx, source_info)
-            except YTDLError as e:
-                await ctx.send(
-                    "An error occurred while processing this request: {}".format(str(e))
-                )
-            else:
-                if not ctx.guild.voice_client:
-                    vc = ctx.message.author.voice.channel
-                    await vc.connect()
-                await ctx.guild.change_voice_state(
-                    channel=ctx.author.voice.channel, self_deaf=True
-                )
-                ctx.voice_client.play(source)
-                await reply_user(ctx, f"✅ Enqueued {str(source)}")
+        if len(queue.queue) == 1:
+            await play_song_from_source(ctx, source)
+            current_queue = 1
+            while current_queue is not None:
+                while ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
+                    await asyncio.sleep(1)
+                if not ctx.voice_client.is_paused():
+                    current_queue = await play_song_from_queue(ctx)
+        else:
+            await reply_user(ctx, f"✅ Thêm bài {str(source)} vào hàng chờ nek")

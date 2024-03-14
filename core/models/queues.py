@@ -8,3 +8,4 @@ class Queues(Document):
     guild_id: int
     voice_channel: int
     queue: List[Any] = []
+    loop: bool = False
