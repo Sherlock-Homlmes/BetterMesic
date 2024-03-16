@@ -1,5 +1,6 @@
 # libraries
 import asyncio
+from typing import Optional
 from discord.ext import commands
 
 # local
@@ -49,7 +50,7 @@ async def get_source_from_source_info(ctx: commands.Context, source_info):
         )
 
 
-async def play_song_from_source(ctx: commands.Context, source):
+async def play_song_from_source(ctx: commands.Context, source, send_message: Optional[bool] = True):
     if not ctx.guild.voice_client:
         vc = ctx.message.author.voice.channel
         await vc.connect()
@@ -57,7 +58,8 @@ async def play_song_from_source(ctx: commands.Context, source):
         channel=ctx.author.voice.channel, self_deaf=True
     )
     ctx.voice_client.play(source)
-    await reply_user(ctx, f"✅ Chơi bài nhạc này nào {str(source)}")
+    if send_message is True:
+        await reply_user(ctx, f"✅ Chơi bài nhạc này nào {str(source)}")
 
 
 async def play_song_from_queue(ctx: commands.Context):
@@ -74,7 +76,10 @@ async def play_song_from_queue(ctx: commands.Context):
             queue.queue.pop(0)
             await queue.save()
         source = await get_source_from_source_info(ctx, queue.queue[0])
-        await play_song_from_source(ctx, source)
+        if queue.loop is False:
+            await play_song_from_source(ctx, source)
+        else:
+            await play_song_from_source(ctx, source, send_message=True)
         return queue
 
 
