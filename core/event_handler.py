@@ -9,6 +9,7 @@ import beanie
 from .conf import bot, botname
 from core.database.mongodb import client
 from core.models import document_models, Queues
+from bot.music_commands.common import check_if_bot_turn
 
 
 async def connect_db() -> None:
@@ -34,6 +35,9 @@ async def on_ready():
 
 @bot.command()
 async def help(ctx):
+    if await check_if_bot_turn() is False:
+        return
+
     embed = discord.Embed(
         title="__Help Menu__",
         description="Write Something Here!",
@@ -47,7 +51,7 @@ async def help(ctx):
     )
     embed.add_field(
         name="🎶 • Music Commands",
-        value="**Command:** ``?join``\n**Usage:** *Joins a voice channel*\n**Command:** ``?leave``\n**Usage:** *leaves the voice channel*\n**Command:** ``?play`` ``<song name>``\n**Usage:** *Plays a song*\n**Command:** ``?pause``\n**Usage:** *Pauses the currently playing song*\n**Command:** ``?resume``\n**Usage:** *Resumes a currently paused song*\n**Command:** ``?summon``\n**Usage:** *Summons the bot to your voice channel*\n**Command:** ``?stop``\n**Usage:** *Stops playing song and clears the queue*",
+        value="**Command:** ``?join``\n**Usage:** *Joins a voice channel*\n**Command:** ``?leave``\n**Usage:** *leaves the voice channel*\n**Command:** ``?play`` ``<song name>``\n**Usage:** *Plays a song*\n**Command:** ``?pause``\n**Usage:** *Pauses the currently playing song*\n**Command:** ``?resume``\n**Usage:** *Resumes a currently paused song*\n**Command:** ``?stop``\n**Usage:** *Stops playing song and clears the queue*",
         inline=False,
     )
     await ctx.send(embed=embed)
