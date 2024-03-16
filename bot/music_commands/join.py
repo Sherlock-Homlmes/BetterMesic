@@ -9,7 +9,9 @@ from .common import check_if_bot_turn
 
 @bot.command(name="join")
 async def join(ctx: commands.Context):
-    if await check_if_bot_turn(ctx) is False:
+    is_bot_turn = await check_if_bot_turn(ctx)
+    print('is bot turn', is_bot_turn)
+    if not is_bot_turn:
         return
 
     destination = ctx.message.author.voice.channel
