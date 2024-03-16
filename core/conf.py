@@ -12,9 +12,16 @@ class Settings(BaseSettings):
     TOKEN: str
     DATABASE_URL: str
 
+    TOKEN1: str
+    TOKEN2: str
+
 
 settings = Settings()
 botname = "Better Mesic"
+bot_ids = [
+    1214218774274773032,
+    1218466176082907296
+]
 
 # bot's def
 bot = commands.Bot(

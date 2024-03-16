@@ -8,6 +8,7 @@ from core.general_func import reply_user
 from core.error_handler import YTDLError
 from services.youtube_mesic import YTDLSource, sourceData
 from core.models import Queues
+from .common import check_if_bot_turn
 
 
 async def get_current_queue(ctx: commands.Context) -> Queues | None:
@@ -83,9 +84,11 @@ async def delete_queue(ctx: commands.Context):
     ).delete()
 
 
-
 @bot.command(name="play")
 async def play(ctx: commands.Context, *, search: str = None):
+    if await check_if_bot_turn(ctx) is False:
+        return
+
     if search is None:
         await reply_user(ctx, "❎ Lỗi! Hãy chọn 1 bài nhạc cụ thể để tôi chơi nhé hêhê")
     else:
@@ -101,7 +104,10 @@ async def play(ctx: commands.Context, *, search: str = None):
             await play_song_from_source(ctx, source)
             current_queue = 1
             while current_queue is not None:
-                while ctx.voice_client and ( ctx.voice_client.is_playing() or ctx.voice_client.is_paused() ):
+                while ctx.voice_client and (
+                    ctx.voice_client.is_playing() or
+                    ctx.voice_client.is_paused()
+                ):
                     await asyncio.sleep(1)
                 if not ctx.voice_client.is_paused():
                     current_queue = await play_song_from_queue(ctx)
