@@ -12,6 +12,10 @@ from core.models import Queues
 from .common import check_if_bot_turn
 
 
+AFK_LEAVE_TIME = 120
+afk_count = 0
+
+
 async def get_current_queue(ctx: commands.Context) -> Queues | None:
     queue = await Queues.find_one(
         Queues.bot_id == bot.user.id,
@@ -50,13 +54,17 @@ async def get_source_from_source_info(ctx: commands.Context, source_info):
         )
 
 
-async def play_song_from_source(ctx: commands.Context, source, send_message: Optional[bool] = True):
-    if not ctx.guild.voice_client:
+async def play_song_from_source(
+    ctx: commands.Context, source, send_message: Optional[bool] = True
+):
+    if ctx.voice_client and ctx.voice_client.channel:
+        pass
+    elif not ctx.guild.voice_client:
         vc = ctx.message.author.voice.channel
         await vc.connect()
-    await ctx.guild.change_voice_state(
-        channel=ctx.author.voice.channel, self_deaf=True
-    )
+        await ctx.guild.change_voice_state(
+            channel=ctx.author.voice.channel, self_deaf=True
+        )
     ctx.voice_client.play(source)
     if send_message is True:
         await reply_user(ctx, f"✅ Chơi bài nhạc này nào {str(source)}")
@@ -79,7 +87,7 @@ async def play_song_from_queue(ctx: commands.Context):
         if queue.loop is False:
             await play_song_from_source(ctx, source)
         else:
-            await play_song_from_source(ctx, source, send_message=True)
+            await play_song_from_source(ctx, source, send_message=False)
         return queue
 
 
@@ -90,7 +98,60 @@ async def delete_queue(ctx: commands.Context):
     ).delete()
 
 
-@bot.command(name="play")
+async def is_any_member_in_voice_channel(ctx: commands.Context):
+    global afk_count
+
+    print("no member", afk_count)
+    if not ctx.voice_client:
+        return False
+    # auto leave when no one in voice channel
+    if (
+        ctx.voice_client
+        and len(
+            [member for member in ctx.voice_client.channel.members if not member.bot]
+        )
+        == 0
+    ):
+        afk_count += 1
+        if afk_count >= AFK_LEAVE_TIME:
+            await delete_queue(ctx)
+            await ctx.voice_client.disconnect()
+            return False
+    else:
+        afk_count = 0
+
+    return True
+
+
+async def is_afk_for_a_long_time(ctx: commands.Context):
+    global afk_count
+
+    print("afk", afk_count)
+    if not ctx.voice_client:
+        return True
+    # auto leave when afk for a long time
+    if not ctx.voice_client.is_playing():
+        afk_count += 1
+        if afk_count >= AFK_LEAVE_TIME:
+            if ctx.voice_client:
+                await ctx.voice_client.channel.send(
+                    "❎ Không có việc j làm thì mình out nha :>"
+                )
+            await delete_queue(ctx)
+            await ctx.voice_client.disconnect()
+            return True
+    else:
+        afk_count = 0
+
+    return False
+
+
+@bot.command(
+    name="play",
+    aliases=[
+        "p",
+    ],
+)
 async def play(ctx: commands.Context, *, search: str = None):
     if await check_if_bot_turn(ctx) is False:
         return
@@ -99,10 +160,7 @@ async def play(ctx: commands.Context, *, search: str = None):
         await reply_user(ctx, "❎ Lỗi! Hãy chọn 1 bài nhạc cụ thể để tôi chơi nhé hêhê")
     else:
         async with ctx.typing():
-            source_info = await YTDLSource.validate_source(
-                search,
-                loop=bot.loop
-            )
+            source_info = await YTDLSource.validate_source(search, loop=bot.loop)
             source = await get_source_from_source_info(ctx, source_info)
             # TODO: if queue: reply add song to queue
             queue = await update_or_insert_queue(ctx, source_info)
@@ -111,11 +169,18 @@ async def play(ctx: commands.Context, *, search: str = None):
             current_queue = 1
             while current_queue is not None:
                 while ctx.voice_client and (
-                    ctx.voice_client.is_playing() or
-                    ctx.voice_client.is_paused()
+                    ctx.voice_client.is_playing() or ctx.voice_client.is_paused()
                 ):
-                    await asyncio.sleep(1)
-                if not ctx.voice_client.is_paused():
+                    await asyncio.sleep(5)
+                    if not await is_any_member_in_voice_channel(ctx):
+                        current_queue = None
+                        break
+                if (
+                    await is_any_member_in_voice_channel(ctx)
+                    and not ctx.voice_client.is_paused()
+                ):
                     current_queue = await play_song_from_queue(ctx)
+            while not await is_afk_for_a_long_time(ctx):
+                await asyncio.sleep(1)
         else:
             await reply_user(ctx, f"✅ Thêm bài {str(source)} vào hàng chờ nek")

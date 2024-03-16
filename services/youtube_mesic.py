@@ -16,6 +16,7 @@ from core.error_handler import YTDLError
 # bug report
 youtube_dl.utils.bug_reports_message = lambda: ""
 
+
 class sourceData(BaseModel):
     uploader: str
     uploader_url: str
@@ -30,6 +31,7 @@ class sourceData(BaseModel):
     like_count: int = 0
     dislike_count: int = 0
     url: str
+
 
 class YTDLSource(discord.PCMVolumeTransformer):
     YTDL_OPTIONS = {
@@ -88,11 +90,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
     def __str__(self):
         return "**{0.title}** by **{0.uploader}**".format(self)
 
-
     @classmethod
-    async def validate_source(
-        cls, search: str, *, loop: asyncio.BaseEventLoop = None
-    ):
+    async def validate_source(cls, search: str, *, loop: asyncio.BaseEventLoop = None):
         loop = loop or asyncio.get_event_loop()
 
         partial = functools.partial(
@@ -138,14 +137,11 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         return info
 
-
     @classmethod
     async def create_source(cls, ctx: commands.Context, info: str):
         return cls(
             ctx, discord.FFmpegPCMAudio(info["url"], **cls.FFMPEG_OPTIONS), data=info
         )
-
-
 
     @classmethod
     async def search_source(

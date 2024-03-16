@@ -23,7 +23,7 @@ async def connect_db() -> None:
 
 @bot.event
 async def on_ready():
-    print(f'Login as ${bot.user.name}')
+    print(f"Login as ${bot.user.name}")
     await connect_db()
     # TODO: change delete to autoplay
     await Queues.find(Queues.bot_id == bot.user.id).delete()
