@@ -12,9 +12,6 @@ class Settings(BaseSettings):
     TOKEN: str
     DATABASE_URL: str
 
-    TOKEN1: str
-    TOKEN2: str
-
 
 settings = Settings()
 botname = "Better Mesic"
