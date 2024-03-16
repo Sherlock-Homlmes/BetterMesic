@@ -61,9 +61,12 @@ async def play_song_from_source(ctx: commands.Context, source):
 
 async def play_song_from_queue(ctx: commands.Context):
     queue = await get_current_queue(ctx)
+    if queue is None:
+        return
+
     if len(queue.queue) == 1:
         await queue.delete()
-        await reply_user(ctx, f"✅ Tôi vừa chơi hết bài rồi đó")
+        await reply_user(ctx, "✅ Mình vừa chơi hết bài rồi đó")
         return None
     else:
         queue.queue.pop(0)
@@ -71,6 +74,14 @@ async def play_song_from_queue(ctx: commands.Context):
         source = await get_source_from_source_info(ctx, queue.queue[0])
         await play_song_from_source(ctx, source)
         return queue
+
+
+async def delete_queue(ctx: commands.Context):
+    await Queues.find(
+        Queues.bot_id == bot.user.id,
+        Queues.guild_id == ctx.guild.id,
+    ).delete()
+
 
 
 @bot.command(name="play")
@@ -90,7 +101,7 @@ async def play(ctx: commands.Context, *, search: str = None):
             await play_song_from_source(ctx, source)
             current_queue = 1
             while current_queue is not None:
-                while ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
+                while ctx.voice_client and ( ctx.voice_client.is_playing() or ctx.voice_client.is_paused() ):
                     await asyncio.sleep(1)
                 if not ctx.voice_client.is_paused():
                     current_queue = await play_song_from_queue(ctx)

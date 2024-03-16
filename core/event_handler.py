@@ -24,7 +24,7 @@ async def connect_db() -> None:
 async def on_ready():
     await connect_db()
     # TODO: change delete to autoplay
-    await Queues.find(Queues.bot_id == bot.user.id,).delete()
+    await Queues.find(Queues.bot_id == bot.user.id).delete()
     await bot.change_presence(
         status=discord.Status.idle,
         activity=discord.Activity(type=discord.ActivityType.playing, name="?help"),
