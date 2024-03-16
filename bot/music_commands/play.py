@@ -65,13 +65,14 @@ async def play_song_from_queue(ctx: commands.Context):
     if queue is None:
         return
 
-    if len(queue.queue) == 1:
+    if queue.loop is False and len(queue.queue) == 1:
         await queue.delete()
         await reply_user(ctx, "✅ Mình vừa chơi hết bài rồi đó")
         return None
     else:
-        queue.queue.pop(0)
-        await queue.save()
+        if queue.loop is False:
+            queue.queue.pop(0)
+            await queue.save()
         source = await get_source_from_source_info(ctx, queue.queue[0])
         await play_song_from_source(ctx, source)
         return queue

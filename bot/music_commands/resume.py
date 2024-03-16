@@ -13,4 +13,4 @@ async def resume(ctx: commands.Context):
         return
 
     ctx.voice_client.resume()
-    await reply_user(ctx, "⏸️ Resumed!")
+    await reply_user(ctx, "⏸️ Tiếp nek!")

@@ -13,4 +13,4 @@ async def pause(ctx: commands.Context):
         return
 
     ctx.voice_client.pause()
-    await reply_user(ctx, "⏸️ Paused!")
+    await reply_user(ctx, "⏸️ Dừng rồi đó hai ơi!")

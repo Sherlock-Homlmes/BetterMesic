@@ -50,6 +50,10 @@ async def check_if_bot_turn(ctx: commands.Context) -> bool:
         all_other_music_bot_in_guild,
         play_bot_id
     )
+    # out of bot
+    if play_bot_id == 0:
+        play_bot_id = bot_ids[0]
+
     if bot.user.id == play_bot_id:
         return True
 
