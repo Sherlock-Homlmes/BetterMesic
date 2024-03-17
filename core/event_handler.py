@@ -6,10 +6,9 @@ import discord
 import beanie
 
 # local
-from .conf import bot, botname
+from .conf import bot, botname, bot_ids
 from core.database.mongodb import client
 from core.models import document_models, Queues
-from bot.music_commands.common import check_if_bot_turn
 
 
 async def connect_db() -> None:
@@ -35,15 +34,15 @@ async def on_ready():
 
 @bot.command()
 async def help(ctx):
-    if await check_if_bot_turn() is False:
+    if bot.user.id != bot_ids[0]:
         return
 
     embed = discord.Embed(
         title="__Help Menu__",
         description="Write Something Here!",
-        color=discord.Colour.red(),
+        color=discord.Colour.yellow(),
     )
-    embed.timestamp = datetime.datetime.utcnow()
+    # embed.timestamp = datetime.datetime.utcnow()
     embed.set_footer(text=f"{botname}")
     embed.set_author(
         name=f"{botname}",

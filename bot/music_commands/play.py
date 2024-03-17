@@ -171,7 +171,7 @@ async def play(ctx: commands.Context, *, search: str = None):
                 while ctx.voice_client and (
                     ctx.voice_client.is_playing() or ctx.voice_client.is_paused()
                 ):
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(2)
                     if not await is_any_member_in_voice_channel(ctx):
                         current_queue = None
                         break
