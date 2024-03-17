@@ -15,4 +15,4 @@ async def stop(ctx: commands.Context):
 
     await delete_queue(ctx)
     await ctx.voice_client.disconnect()
-    await reply_user(ctx, "⏸✅ Chúng ta. Dừng lại ở đây thôi...")
+    await reply_user(ctx, "✅ Chúng ta. Dừng lại ở đây thôi...")

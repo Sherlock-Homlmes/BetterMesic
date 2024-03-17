@@ -50,7 +50,21 @@ async def help(ctx):
     )
     embed.add_field(
         name="🎶 • Music Commands",
-        value="**Command:** ``?join``\n**Usage:** *Joins a voice channel*\n**Command:** ``?leave``\n**Usage:** *leaves the voice channel*\n**Command:** ``?play`` ``<song name>``\n**Usage:** *Plays a song*\n**Command:** ``?pause``\n**Usage:** *Pauses the currently playing song*\n**Command:** ``?resume``\n**Usage:** *Resumes a currently paused song*\n**Command:** ``?stop``\n**Usage:** *Stops playing song and clears the queue*",
+        value="""**Command:** ``?join``
+**Usage:** *Vào chơi cho vui nè*
+**Command:** ``?stop``|``?leave``
+**Usage:** *Nghỉ chơi nè*
+**Command:** ``?play``|``?p`` ``<tên bài hát|link youtube|link soundcloud>``
+**Usage:** *Chơi nhạc nè*
+**Command:** ``?skip``
+**Usage:** *Qua bài tiếp nè*
+**Command:** ``?pause``
+**Usage:** *Dừng lại nè*
+**Command:** ``?resume``
+**Usage:** *Tiếp tục nè*
+**Command:** ``?loop``
+**Usage:** *Chơi đi chơi lại nè*
+""",
         inline=False,
     )
     await ctx.send(embed=embed)
