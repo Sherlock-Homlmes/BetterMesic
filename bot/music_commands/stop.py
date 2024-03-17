@@ -8,7 +8,7 @@ from .play import delete_queue
 from .common import check_if_bot_turn
 
 
-@bot.command(name="stop")
+@bot.command(name="stop", aliases=["leave",])
 async def stop(ctx: commands.Context):
     if await check_if_bot_turn(ctx) is False:
         return

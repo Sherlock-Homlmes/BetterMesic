@@ -38,8 +38,8 @@ async def help(ctx):
         return
 
     embed = discord.Embed(
-        title="__Help Menu__",
-        description="Write Something Here!",
+        title="Lệnh nè 2 ơi",
+        description="Tự nhìn dùm nha",
         color=discord.Colour.yellow(),
     )
     # embed.timestamp = datetime.datetime.utcnow()
