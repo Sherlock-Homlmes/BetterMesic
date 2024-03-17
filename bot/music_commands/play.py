@@ -101,7 +101,6 @@ async def delete_queue(ctx: commands.Context):
 async def is_any_member_in_voice_channel(ctx: commands.Context):
     global afk_count
 
-    print("no member", afk_count)
     if not ctx.voice_client:
         return False
     # auto leave when no one in voice channel
@@ -126,7 +125,6 @@ async def is_any_member_in_voice_channel(ctx: commands.Context):
 async def is_afk_for_a_long_time(ctx: commands.Context):
     global afk_count
 
-    print("afk", afk_count)
     if not ctx.voice_client:
         return True
     # auto leave when afk for a long time
