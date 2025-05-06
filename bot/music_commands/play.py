@@ -1,6 +1,7 @@
 # libraries
 import asyncio
 from typing import Optional
+import discord
 from discord.ext import commands
 
 # local
@@ -144,6 +145,46 @@ async def is_afk_for_a_long_time(ctx: commands.Context):
     return False
 
 
+# @bot.command(
+#     name="play",
+#     aliases=[
+#         "p",
+#     ],
+# )
+# async def play(ctx: commands.Context, *, search: str = None):
+#     if await check_if_bot_turn(ctx) is False:
+#         return
+
+#     if search is None:
+#         await reply_user(ctx, "❎ Lỗi! Hãy chọn 1 bài nhạc cụ thể để tôi chơi nhé hêhê")
+#     else:
+#         async with ctx.typing():
+#             source_info = await YTDLSource.validate_source(search, loop=bot.loop)
+#             source = await get_source_from_source_info(ctx, source_info)
+#             # TODO: if queue: reply add song to queue
+#             queue = await update_or_insert_queue(ctx, source_info)
+#         if len(queue.queue) == 1:
+#             await play_song_from_source(ctx, source)
+#             current_queue = 1
+#             while current_queue is not None:
+#                 while ctx.voice_client and (
+#                     ctx.voice_client.is_playing() or ctx.voice_client.is_paused()
+#                 ):
+#                     await asyncio.sleep(2)
+#                     if not await is_any_member_in_voice_channel(ctx):
+#                         current_queue = None
+#                         break
+#                 if (
+#                     await is_any_member_in_voice_channel(ctx)
+#                     and not ctx.voice_client.is_paused()
+#                 ):
+#                     current_queue = await play_song_from_queue(ctx)
+#             while not await is_afk_for_a_long_time(ctx):
+#                 await asyncio.sleep(1)
+#         else:
+#             await reply_user(ctx, f"✅ Thêm bài {str(source)} vào hàng chờ nek")
+
+
 @bot.command(
     name="play",
     aliases=[
@@ -158,27 +199,28 @@ async def play(ctx: commands.Context, *, search: str = None):
         await reply_user(ctx, "❎ Lỗi! Hãy chọn 1 bài nhạc cụ thể để tôi chơi nhé hêhê")
     else:
         async with ctx.typing():
-            source_info = await YTDLSource.validate_source(search, loop=bot.loop)
-            source = await get_source_from_source_info(ctx, source_info)
-            # TODO: if queue: reply add song to queue
-            queue = await update_or_insert_queue(ctx, source_info)
-        if len(queue.queue) == 1:
-            await play_song_from_source(ctx, source)
-            current_queue = 1
-            while current_queue is not None:
-                while ctx.voice_client and (
-                    ctx.voice_client.is_playing() or ctx.voice_client.is_paused()
-                ):
-                    await asyncio.sleep(2)
-                    if not await is_any_member_in_voice_channel(ctx):
-                        current_queue = None
-                        break
-                if (
-                    await is_any_member_in_voice_channel(ctx)
-                    and not ctx.voice_client.is_paused()
-                ):
-                    current_queue = await play_song_from_queue(ctx)
-            while not await is_afk_for_a_long_time(ctx):
-                await asyncio.sleep(1)
-        else:
-            await reply_user(ctx, f"✅ Thêm bài {str(source)} vào hàng chờ nek")
+            if ctx.voice_client and ctx.voice_client.channel:
+                pass
+            elif ctx.message.author.voice:
+                vc = ctx.message.author.voice.channel
+                await vc.connect()
+                await ctx.guild.change_voice_state(
+                    channel=ctx.author.voice.channel, self_deaf=True
+                )
+            else:
+                await reply_user(ctx, "❎ Bạn cần ở trong một kênh thoại để tôi vào!")
+                return
+
+            if ctx.voice_client:
+                url = "https://new-files.betterme.study/audios/94bc253b_M_t_L_i_n_-_B_t_Band_Demo_-_Remastered.opus"
+                try:
+                    source = discord.FFmpegOpusAudio(url)
+                    ctx.voice_client.play(
+                        source,
+                        after=lambda e: print(f"Player error: {e}") if e else None,
+                    )
+                    await reply_user(ctx, f"✅ Đang phát abc")
+                except Exception as e:
+                    await reply_user(ctx, f"❎ Lỗi khi phát file local: {str(e)}")
+            else:
+                await reply_user(ctx, "❎ Không thể kết nối vào kênh thoại.")
